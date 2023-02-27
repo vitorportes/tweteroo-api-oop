@@ -12,8 +12,6 @@ export class TweetsController {
 
     const { avatar } = await User.findOne({ username: tweet.username });
 
-    tweets.push({ username: tweet.username, tweet: tweet.tweet, avatar });
-
     const newPost = await Tweets.create({
       tweet: tweet.tweet,
       username: tweet.username,
@@ -31,15 +29,15 @@ export class TweetsController {
   }
 
   async getAllTweets(req, res) {
-
-    const { page } = req.params; 
+    const { page } = req.params;
     const limite = 10;
     const start = (page - 1) * limite;
 
-
-    const allTweets = await Tweets.find({}).sort({_id: -1}).skip(start).limit(limite);
+    const allTweets = await Tweets.find({})
+      .sort({ _id: -1 })
+      .skip(start)
+      .limit(limite);
 
     res.status(200).send(allTweets);
   }
 }
-

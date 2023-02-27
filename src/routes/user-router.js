@@ -1,9 +1,14 @@
 import { Router } from "express";
 import { UserController } from "../controllers/user-controller.js";
 
-const userRouter = Router();
-const userController = new UserController();
+export class UserRouter {
+  constructor() {
+    this.userController = new UserController();
+    this.router = Router();
+    this.loadRoutes();
+  }
 
-userRouter.post("/sign-up", userController.signUp);
-
-export default userRouter;
+  loadRoutes() {
+    this.router.post("/sign-up", this.userController.signUp);
+  }
+}
