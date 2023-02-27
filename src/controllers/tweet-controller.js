@@ -1,49 +1,45 @@
-import { usuarios } from "./user-controller.js";
+import { Tweet } from "../model/Tweet.js";
+import User from "../mongodb/models/user.js";
+import Tweets from "../mongodb/models/tweet.js";
 
-const tweets = [];
+export class TweetsController {
+  async postTweet(req, res) {
+    const tweet = new Tweet(req.body);
 
-function postTweet(req, res) {
-  const { tweet, username } = req.body;
+    if (!tweet.username || !tweet.tweet) {
+      return res.status(400).send("Todos os campos são obrigatórios!");
+    }
 
-  if (!username || !tweet) {
-    return res.status(400).send("Todos os campos são obrigatórios!");
+    const { avatar } = await User.findOne({ username: tweet.username });
+
+    tweets.push({ username: tweet.username, tweet: tweet.tweet, avatar });
+
+    const newPost = await Tweets.create({
+      tweet: tweet.tweet,
+      username: tweet.username,
+    });
+
+    res.status(201).send("OK, seu tweet foi criado");
   }
 
-  const { avatar } = usuarios.find((user) => user.username === username);
+  async getTweetsByUserName(req, res) {
+    const { username } = req.params;
 
-  tweets.push({ username, tweet, avatar });
+    const tweetsDoUsuario = await Tweets.find({ username: username });
 
-  res.status(201).send("OK, seu tweet foi criado");
-}
-
-function getTweetsByUserName(req, res) {
-  const { username } = req.params;
-
-  const tweetsDoUsuario = tweets.filter((t) => t.username === username);
-
-  res.status(200).send(tweetsDoUsuario);
-}
-
-function getAllTweets(req, res) {
-  const { page } = req.query;
-
-  if (page && page < 1) {
-    res.status(400).send("Informe uma página válida!");
-    return;
-  }
-  const limite = 10;
-  const start = (page - 1) * limite;
-  const end = page * limite;
-
-  if (tweets.length <= 10) {
-    return res.send(reverseTweets());
+    res.status(200).send(tweetsDoUsuario);
   }
 
-  res.status(200).send([...tweets].reverse().slice(start, end));
+  async getAllTweets(req, res) {
+
+    const { page } = req.params; 
+    const limite = 10;
+    const start = (page - 1) * limite;
+
+
+    const allTweets = await Tweets.find({}).sort({_id: -1}).skip(start).limit(limite);
+
+    res.status(200).send(allTweets);
+  }
 }
 
-function reverseTweets() {
-  return [...tweets].reverse();
-}
-
-export { postTweet, getTweetsByUserName, getAllTweets };
